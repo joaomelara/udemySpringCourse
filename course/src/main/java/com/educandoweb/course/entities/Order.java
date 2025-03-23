@@ -2,7 +2,9 @@ package com.educandoweb.course.entities;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import com.educandoweb.course.entities.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,10 +15,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "tb_oder")
+@Table(name = "tb_order")
 public class Order implements Serializable {
     
     /**
@@ -30,13 +33,14 @@ public class Order implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM'T'HH:mm:ss'Z'", timezone = "GMT")
     private Instant moment;
     
-    private OrderStatus orderStatus;
+    private Integer orderStatus;
     
     @ManyToOne
     @JoinColumn(name = "client_id")
     private User client;
     
-   
+    @OneToMany(mappedBy = "id.order")
+   private Set<OrderItem> items = new HashSet<>();
     
     public Order() {
 	
@@ -46,7 +50,7 @@ public class Order implements Serializable {
 	super();
 	this.id = id;
 	this.moment = moment;
-	this.orderStatus = orderStatus;
+	setOrderStatus(orderStatus);
 	this.client = client;
 	
     }
@@ -77,13 +81,19 @@ public class Order implements Serializable {
     
 
     public OrderStatus getOrderStatus() {
-        return orderStatus;
+        return OrderStatus.valueOf(orderStatus);
     }
 
     public void setOrderStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
+	if(orderStatus != null) {
+        this.orderStatus = orderStatus.getCode();
+	}
     }
-
+    
+    public Set<OrderItem> getItems() {
+	return items;
+    }
+    
     @Override
     public int hashCode() {
 	return Objects.hash(id);
